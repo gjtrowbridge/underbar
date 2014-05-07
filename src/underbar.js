@@ -520,7 +520,38 @@ var _ = {};
   //
   // See the Underbar readme for details.
   _.throttle = function(func, wait) {
+    var lastCalled = 0;
+    var queued = false;
+    var toReturn = 0;
     
+    return function() {
+      var timeNow = new Date().getTime();
+      
+      if (queued) {
+        //One call is already queued after the
+        //the time elapses--does nothing
+      } else if (timeNow - wait >= lastCalled) {
+        //No calls queued and none have happened
+        //in the last [wait] milliseconds--calls
+        //the function.
+        lastCalled = timeNow;
+        toReturn = func.apply();
+      } else {
+        //function has been called in the last
+        //[wait] milliseconds, so queues up a new
+        //call to occur as soon as the current one ends
+        queued = true;
+        
+        //keep in mind that the toReturn variable
+        //will not be set until this new function is called
+        window.setTimeout(function() {
+          queued = false;
+          lastCalled = new Date().getTime();
+          toReturn = func.apply();
+        }, lastCalled + wait - timeNow);
+      }
+      return toReturn;
+    };
   };
 
 }).call(this);
