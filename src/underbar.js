@@ -398,6 +398,16 @@ var _ = {};
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    if (typeof iterator === "function") {
+      collection.sort(function(a,b) {
+        return iterator(a) > iterator(b);
+      });
+    } else {
+      collection.sort(function(a,b) {
+        return a[iterator] > b[iterator];
+      });
+    }
+    return collection;
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -406,6 +416,28 @@ var _ = {};
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var result = [];
+    var index = 0;
+		
+    while (true) {
+      var arr = [];
+      var keepGoing = false;
+      
+      for (var i=0; i<arguments.length; i++) {
+        arr.push(arguments[i][index]);
+        if (arguments[i].length > index) {
+          keepGoing = true;
+        }
+      }
+      
+      if (keepGoing) {
+        result.push(arr);
+        index++;
+      } else {
+        break;
+      }
+    }
+    return result;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -413,11 +445,44 @@ var _ = {};
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    if (result === undefined) {
+      result = [];
+    }
+    
+    while (nestedArray.length > 0) {
+      var el = nestedArray.shift();
+      
+      if (Array.isArray(el)) {
+        result = _.flatten(el, result);
+      } else {
+        result.push(el);
+      }
+    }
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var arr = arguments[0];
+    var result = [];
+    
+    for (var i=0; i<arr.length; i++) {
+      var val = arr[i];
+      var include = true;
+      for (var j=1; j<arguments.length; j++) {
+        if (arguments[j].indexOf(val) === -1) {
+          include = false;
+          break;
+        }
+      }
+      
+      if (include) {
+        result.push(val);
+      }
+    }
+    
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
